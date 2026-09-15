@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WikiGaming — La enciclopedia de las consolas</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Librería ligera para convertir Markdown a HTML en vivo -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body>
+
+    <div class="wiki-container">
+        <!-- Menú Lateral -->
+        <aside class="sidebar" id="sidebar-content">
+            <!-- Aquí se cargará automáticamente el _sidebar.md -->
+        </aside>
+
+        <!-- Contenido Principal -->
+        <main class="content" id="main-content">
+            <h1>Bienvenido a WikiGaming</h1>
+            <p>Tu enciclopedia especializada en consolas desde el año 2000 hasta la actualidad.</p>
+            <p>Selecciona una generación o consola en el menú de la izquierda para comenzar a explorar su historia, especificaciones y modelos.</p>
+        </main>
+    </div>
+
+    <script>
+        // 1. Cargar el menú lateral (_sidebar.md)
+        fetch('_sidebar.md')
+            .then(res => res.text())
+            .then(md => {
+                document.getElementById('sidebar-content').innerHTML = marked.parse(md);
+                configurarEnlaces();
+            });
+
+        // 2. Función para que los enlaces carguen el contenido sin recargar la página
+        function configurarEnlaces() {
+            document.querySelectorAll('.sidebar a').forEach(enlace => {
+                enlace.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const rutaArchivo = this.getAttribute('href');
+                    
+                    if (rutaArchivo && rutaArchivo.endsWith('.md')) {
+                        fetch(rutaArchivo)
+                            .then(res => {
+                                if(!res.ok) throw new Error("Archivo no encontrado");
+                                return res.text();
+                            })
+                            .then(md => {
+                                document.getElementById('main-content').innerHTML = marked.parse(md);
+                            })
+                            .catch(err => {
+                                document.getElementById('main-content').innerHTML = `<h1>Error</h1><p>No se pudo cargar la información de esta consola. Verifica que el archivo exista en la carpeta correspondiente.</p>`;
+                            });
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>
